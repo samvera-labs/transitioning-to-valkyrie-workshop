@@ -10,9 +10,21 @@ This workshop assumes a general familiarity with Object Orientation and Ruby pro
 ## Learning Outcomes
 
 We will learn:
-- Familiarity with general design patterns for Valkyrie and Dry.rb applications.
-- Familiarity with patterns applied in Hyrax 4 and common integration points for applications
-- Ideas about how to apply Hyrax patterns to improve maintainability of Hyrax 3.x and 4.x applications
+1. Familiarity with general design patterns for Valkyrie and Dry.rb applications.
+   1. Why DataMapper?
+   1. Metadata as Configuration
+   1. ChangeSets & Forms
+   1. Indexers
+   1. AccessControlList
+1. Familiarity with patterns applied in Hyrax 4 and common integration points for applications
+   1. Custom Queries
+   1. Transactions
+      1. As a replacement for the ActorStack
+      1. Patterns for overriding Hyrax's default transactions.
+   1. Hyrax's Event Bus
+      1. Old callback model and its limitations.
+      1. Writing and subscribing listeners.
+1. Ideas about how to apply Hyrax patterns to improve maintainability of Hyrax 3.x and 4.x applications
 
 ## Prerequisites
 
@@ -29,3 +41,4 @@ We will learn:
 ## Resources
 
   * [Hyrax Valkyrie Usage Guide](https://github.com/samvera/hyrax/wiki/Hyrax-Valkyrie-Usage-Guide)
+  * [Hyrax's Event Bus](https://github.com/samvera/hyrax/wiki/Hyrax's-Event-Bus-(Hyrax::Publisher))
