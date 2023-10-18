@@ -3,19 +3,20 @@
 This repository supports a workshop given at
 [Samvera Connect 2023](https://samvera.atlassian.net/wiki/spaces/samvera/pages/2174877699/Samvera+Connect+2023).
 
-Valkyrie is a data persistence library which provides a common interface to multiple backends. There are a growing number of Samvera applications that use Valkyrie including Hyrax. This workshop will introduce core concepts and how they differ from ActiveFedora, ActiveRecord, and ActiveStorage. We’ll build a simple rails application that uses Valkyrie to write metadata to a postgres database and store files on disk.
+Over the past several releases, Hyrax internals have become increasingly patterned after Valkyrie. As the engine codebase has been adapted, new interfaces for applications have been introduced leveraging these patterns. We’ll go over these patterns, how they differ from previous patterns, and how to use them to customize your Hyrax application.
 
-This workshop assumes a general familiarity with Object Orientation and Ruby programming. Participants will need a laptop with a working docker/docker compose setup. We'll provide preparation instructions to registered attendees in advance of the workshop.
+This workshop assumes a general familiarity with Object Orientation and Ruby programming, and some hands-on experience with the Valkyrie data mapper library.
 
 ## Learning Outcomes
 
 We will learn:
+
 1. Familiarity with general design patterns for Valkyrie and Dry.rb applications.
-   1. Why DataMapper?
-   1. Metadata as Configuration
-   1. ChangeSets & Forms
-   1. Indexers
-   1. AccessControlList
+   1. Understand why Hyrax has moved toward Valkyrie (and the DataMapper pattern);
+   1. Know how to use Configurable Metadata for defining Hyrax models;
+   1. Understand support objects for data interactions in Hyrax and their customization;
+      1. Data Validation with ChangeSets & Forms
+      1. Indexers
 1. Familiarity with patterns applied in Hyrax 4 and common integration points for applications
    1. Custom Queries
    1. Transactions
@@ -35,8 +36,23 @@ We will learn:
 
 ## Agenda
 
-???
+### The Problem (13:15 pm)
 
+ - TK: I still have a complex application, but now I'm not bundling that complexity into my models. The complexity has to go somewhere. In _Dive Into Valkyrie_, we put that complexity into the controller (count the dependencies in the controller). This has some trade offs: I get all the flexibility that Valkyrie/Data Mapper promises but, in practice, I write more controllers than I write models.
+
+### Forms & Indexers (13:30)
+
+### Configurable Metadata (14:00)
+
+### Dry-Events & Hyrax's Event Bus (14:30)
+
+### Break (15:00)
+
+### Custom Queries (15:15)
+
+### Transactions (15:30)
+
+### Wrap-up (16:00)
 
 ## Resources
 
