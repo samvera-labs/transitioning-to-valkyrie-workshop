@@ -1,0 +1,145 @@
+# Requires Docker Compose v2
+name: koppie
+services:
+  app: &app
+    build:
+      context: .
+      target: koppie-workshop
+      args:
+        - EXTRA_APK_PACKAGES=git less bash
+        - APP_PATH=koppie
+    image: samvera/koppie
+    command: sh -c 'bundle exec puma -v -b tcp://0.0.0.0:3000'
+    stdin_open: true
+    tty: true
+    user: root
+    env_file:
+      - ./koppie/.env
+    environment:
+      - RAILS_ROOT=/app/samvera/hyrax-webapp
+    depends_on:
+      - db_migrate
+      - memcached
+      - postgres
+      - redis
+      - solr
+    ports:
+      - 3001:3000
+      - 9877:9876
+      - 1049:1048
+    volumes:
+      - ./koppie:/app/samvera/hyrax-webapp
+      - hyrax-storage:/app/samvera/hyrax-webapp/storage
+      - hyrax-derivatives:/app/samvera/hyrax-webapp/derivatives
+      - hyrax-uploads:/app/samvera/hyrax-webapp/uploads
+      - rails-public:/app/samvera/hyrax-webapp/public
+      - rails-tmp:/app/samvera/hyrax-webapp/tmp
+    networks:
+      - koppie
+
+  sidekiq:
+    build:
+      context: .
+      target: koppie-workshop-worker
+      args:
+        - EXTRA_APK_PACKAGES=git less bash
+        - APP_PATH=koppie
+    image: samvera/koppie-worker
+    command: sh -c 'bundle exec sidekiq'
+    user: root
+    env_file:
+      - ./koppie/.env
+    depends_on:
+      - db_migrate
+      - memcached
+      - postgres
+      - redis
+      - solr
+    volumes:
+      - ./koppie:/app/samvera/hyrax-webapp
+      - hyrax-storage:/app/samvera/hyrax-webapp/storage
+      - hyrax-derivatives:/app/samvera/hyrax-webapp/derivatives
+      - hyrax-uploads:/app/samvera/hyrax-webapp/uploads
+      - sidekiq-public:/app/samvera/hyrax-webapp/public
+      - sidekiq-tmp:/app/samvera/hyrax-webapp/tmp
+    networks:
+      - koppie
+
+  db_migrate:
+    image: samvera/koppie
+    user: root
+    env_file:
+      - ./koppie/.env
+    command: db-migrate-seed.sh
+    depends_on:
+      - postgres
+      - solr
+    volumes:
+      - ./koppie:/app/samvera/hyrax-webapp
+      - rails-public:/app/samvera/hyrax-webapp/public
+      - rails-tmp:/app/samvera/hyrax-webapp/tmp
+    networks:
+      - koppie
+
+  postgres:
+    image: postgres:15
+    env_file:
+      - ./koppie/.env
+    ports:
+      - "5433:5432"
+    volumes:
+      - db:/var/lib/postgresql/data
+    networks:
+      - koppie
+
+  memcached:
+    image: bitnami/memcached
+    ports:
+      - '11212:11211'
+    networks:
+      - koppie
+
+  redis:
+    image: bitnami/redis:6.2
+    env_file:
+      - ./koppie/.env
+    volumes:
+      - redis:/bitnami/redis/data
+    networks:
+      - koppie
+
+  solr:
+    image: solr:8.11
+    ports:
+      - 8984:8983
+    command:
+      - sh
+      - "-c"
+      - "precreate-core koppie_test /opt/solr/server/configsets/hyraxconf; solr-precreate koppie /opt/solr/server/configsets/hyraxconf"
+    volumes:
+      - solr_home:/var/solr/data:cached
+      - ./koppie/solr/conf:/opt/solr/server/configsets/hyraxconf
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 524288
+    networks:
+      - koppie
+
+volumes:
+  db:
+  hyrax-storage:
+  hyrax-derivatives:
+  hyrax-uploads:
+  rails-public:
+  rails-tmp:
+  redis:
+  sidekiq-public:
+  sidekiq-tmp:
+  solr_home:
+
+networks:
+  koppie:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: br-koppie
