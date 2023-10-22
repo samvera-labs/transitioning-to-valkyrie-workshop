@@ -6,7 +6,7 @@ require File.expand_path('../config/environment', __dir__)
 abort("The Rails environment is running in production mode!") if Rails.env.production?
 require 'rspec/rails'
 # Add additional requires below this line. Rails is not loaded until this point!
-
+require 'factory_bot'
 require 'valkyrie'
 Valkyrie::MetadataAdapter.register(Valkyrie::Persistence::Memory::MetadataAdapter.new, :test_adapter)
 Valkyrie::StorageAdapter.register(Valkyrie::Storage::Memory.new, :memory)
