@@ -10,4 +10,10 @@ RSpec.describe Monograph do
   let(:resource) { work }
 
   it_behaves_like 'a Hyrax::Work'
+
+  it "has a isbn field" do
+    expect { work.isbn = '978-3-16-148410-0' }
+      .to change { work.isbn }
+      .to eq '978-3-16-148410-0'
+  end
 end
