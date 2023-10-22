@@ -183,6 +183,7 @@ docker compose exec app rspec
 
 ### Configurable Metadata (14:00)
 
+
 Hyrax supports YAML driven metadata configuration!
 
 As an alternate solution to exercise 1, we can do this (and then add validation to the form):
