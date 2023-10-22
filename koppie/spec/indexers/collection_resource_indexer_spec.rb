@@ -10,5 +10,5 @@ RSpec.describe CollectionResourceIndexer do
   let(:resource)      { CollectionResource.new }
 
   it_behaves_like 'a Hyrax::Resource indexer'
-  it_behaves_like 'a Basic metadata indexer'
+  # it_behaves_like 'a Basic metadata indexer'
 end

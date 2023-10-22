@@ -37,36 +37,14 @@ services:
     networks:
       - koppie
 
-  sidekiq:
+  db_migrate:
     build:
       context: .
-      target: koppie-workshop-worker
+      target: koppie-workshop
       args:
         - EXTRA_APK_PACKAGES=git less bash
         - APP_PATH=koppie
-    image: samvera/koppie-worker
-    command: sh -c 'bundle exec sidekiq'
-    user: root
-    env_file:
-      - ./koppie/.env
-    depends_on:
-      - db_migrate
-      - memcached
-      - postgres
-      - redis
-      - solr
-    volumes:
-      - ./koppie:/app/samvera/hyrax-webapp
-      - hyrax-storage:/app/samvera/hyrax-webapp/storage
-      - hyrax-derivatives:/app/samvera/hyrax-webapp/derivatives
-      - hyrax-uploads:/app/samvera/hyrax-webapp/uploads
-      - sidekiq-public:/app/samvera/hyrax-webapp/public
-      - sidekiq-tmp:/app/samvera/hyrax-webapp/tmp
-    networks:
-      - koppie
-
-  db_migrate:
-    image: samvera/koppie
+    image: ghcr.io/samvera/transitioning-to-valkyrie-workshop:2023-10-23
     user: root
     env_file:
       - ./koppie/.env
