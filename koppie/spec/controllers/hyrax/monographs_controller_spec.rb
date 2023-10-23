@@ -10,7 +10,6 @@ RSpec.describe Hyrax::MonographsController do
     let(:params) do
       {monograph: {title: ["Comet in Moominland"],
                    creator: ['Tove Jansson'],
-                   identifier: 'moomin',
                    record_info: "test controller record",
                    visibility: 'open'}}
     end
@@ -19,10 +18,11 @@ RSpec.describe Hyrax::MonographsController do
       post :create, params: params
 
       object = Hyrax.query_service.find_all_of_model(model: Monograph).first
-      expect(object).to have_attributes(identifier: "my_id_scheme:#{object.id}")
+      expect(object).to have_attributes(identifier: contain_exactly("my_id_scheme:#{object.id}"))
 
       # ensure the id is indexed
-      expect(Hyrax::SolrService.get("id:#{object.id}")['response']['docs'].first['identifier_ssim']).to contain_exactly("my_id_scheme:#{object.id}")
+      solr_doc = Hyrax::SolrService.get("id:#{object.id}")['response']['docs'].first
+      expect(solr_doc['identifier_ssim']).to contain_exactly("my_id_scheme:#{object.id}")
     end
   end
 end
