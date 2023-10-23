@@ -133,7 +133,6 @@ git checkout models-exercise
 docker compose exec app rspec
 ```
 
-
 #### Resources
 
   - [Valkyrie ChangeSets](https://github.com/samvera/valkyrie/wiki/ChangeSets-and-Dirty-Tracking)
@@ -141,7 +140,7 @@ docker compose exec app rspec
 
 ### Configurable Metadata (14:00)
 
-Hyrax supports YAML driven configuration!
+Hyrax supports YAML driven metadata configuration!
 
 As an alternate solution to exercise 1, we can do this (and then add validation to the form):
 
@@ -245,15 +244,92 @@ If you have time, make another listener that does something more complex! (or ta
 
 ### Transactions (15:15)
 
+Transactions borrow from the concept of [Railway Oriented Programming](https://fsharpforfunandprofit.com/rop/). The idea is to break complex business logic down into small independent operations which can be mix-and-matched. Each step returns a `Result` object. The `Result` can be a `Success`, wrapping the input for the next step (we use the notation `Success(value)`). Or it can be a `Failure` which wraps some arbitrary data about the failure for later handling.
+
+If each step is a `Success`, the transaction continues through to the next step. If any step is a `Failure` future steps simply pass the `Failure` `Result` through to the caller, without doing any further work.
+
+```ruby
+work = Monograph.new
+form = Hyrax::Forms::ResourceForm.for(work)
+input = {title: 'Comet in Moominland', creator: 'Tove Jansson', record_info: "workshop record"}
+
+form.validate(input)
+form.valid?
+
+result = Hyrax::Transactions::Container['change_set.create_work'].call(form)
+result.value_or { |f| raise f.failure }
+```
+
+#### Defining Steps
+
+Define new steps as classes that respond to `#call` with a single argument. The argument will be the return value from the previous `Success(value)`. `#call` should return a `Success` and the new value:
+
+```ruby
+class SetMeAsCreator
+  include Dry::Monads[:result]
+
+  def call(obj)
+    return Failure[:no_creator_attribute] unless
+      obj.respond_to?(:creator=)
+
+    obj.creator = 'ME!'
+    Success(obj)
+  end
+end
+```
+
+#### [`Hyrax::Transactions::Container`](https://www.rubydoc.info/gems/hyrax/Hyrax/Transactions/Container)
+
+Transactions use a [`Dry::Container`](https://dry-rb.org/gems/dry-system/1.0/container/) to resolve transaction and step names. In exchange for requiring registration with the container when defining a new transaction/step, this makes it extremely easy to change step or transaction behavior.
+
+To lookup steps and transactions:
+
+```ruby
+Hyrax::Transactions::Container['change_set.apply'] # list of steps
+Hyrax::Transactions::Container['change_set.set_modified_date']
+```
+
+To register new steps:
+
+```ruby
+Hyrax::Transactions::Container.register('change_set.set_me_as_creator', SetMeAsCreator.new)
+```
+
+Overwriting existing registered names is a little fussy, our recommended way of doing this is to define a new container and merge them:
+
+```ruby
+class ApplicationContainerOverrides
+  extend Dry::Container::Mixin
+
+  namespace 'change_set' do |ops|
+    ops.register 'apply' do
+      Hyrax::Transactions::ApplyChangeSet.new(steps:
+        ['change_set.set_me_as_creator',
+         'change_set.set_modified_date',
+         'change_set.set_uploaded_date_unless_present',
+         'change_set.validate',
+         'change_set.save'].freeze)
+    end
+  end
+end
+
+Hyrax::Transactions::Container.merge(ApplicationContainerOverrides)
+```
+
 #### Exercise 3: Transactions
 
 ```sh
+# Make these tests pass:
 git checkout transactions-exercise
 docker compose exec app bundle exec rspec
 ```
 
 #### Resources
 
+  - [Hyrax::Transactions::Transaction](https://www.rubydoc.info/gems/hyrax/Hyrax/Transactions/Transaction)
+  - [Hyrax::Transactions::Container](https://www.rubydoc.info/gems/hyrax/Hyrax/Transactions/Container)
+  - [Dry::Container](https://dry-rb.org/gems/dry-system/1.0/container/)
+  - [Railway Oriented Programming](https://fsharpforfunandprofit.com/rop/)
   - [The Result Object (monad)](https://dry-rb.org/gems/dry-monads/1.6/result/)
 
 ### Wrap-up (16:00)
