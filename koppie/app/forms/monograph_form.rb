@@ -9,6 +9,10 @@ class MonographForm < Hyrax::Forms::ResourceForm(Monograph)
   include Hyrax::FormFields(:basic_metadata)
   include Hyrax::FormFields(:monograph)
 
+  property :isbn
+
+  validates :isbn, format: { with: /(?=(?:\D*\d){10}(?:(?:\D*\d){3})?$)[\d-]+/ }
+
   # Define custom form fields using the Valkyrie::ChangeSet interface
   #
   # property :my_custom_form_field
