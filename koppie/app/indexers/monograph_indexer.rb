@@ -7,10 +7,9 @@ class MonographIndexer < Hyrax::ValkyrieWorkIndexer
   include Hyrax::Indexer(:monograph)
 
   # Uncomment this block if you want to add custom indexing behavior:
-  #  def to_solr
-  #    super.tap do |index_document|
-  #      index_document[:my_field_tesim]   = resource.my_field.map(&:to_s)
-  #      index_document[:other_field_ssim] = resource.other_field
-  #    end
-  #  end
+  def to_solr
+    super.tap do |index_document|
+      index_document[:identifier_ssim] = Array(resource.identifier).map(&:to_s)
+    end
+  end
 end
