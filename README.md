@@ -186,6 +186,12 @@ If an application subscribes a listener to an topic, it should be able to rely o
 
 If an application performs a relevant behavior, it __SHOULD__ publish an event on the related topic. This will take advantage of both the default and locally configured listeners.
 
+#### Publishing Events
+
+```ruby
+Hyrax.publisher.publish('object.deposited', object: deposited_object, user: depositing_user)
+```
+
 #### Implementing Listeners
 
 Define a class with a listener method, and subscribe it to the Publisher:
@@ -193,17 +199,12 @@ Define a class with a listener method, and subscribe it to the Publisher:
 ```ruby
 class MyCustomListener
   def on_object_deposited(event)
-    # do something here
+    # the options passed to `#publish` constitute a payload
+    do_something(event[:object])
   end
 end
 
 Hyrax.publisher.subscribe(MyCustomListener.new)
-```
-
-#### Publishing Events
-
-```ruby
-Hyrax.publisher.publish('object.deposited', object: deposited_object, user: depositing_user)
 ```
 
 #### Exercise 2: Custom Listener
