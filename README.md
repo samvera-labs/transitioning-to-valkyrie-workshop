@@ -362,6 +362,10 @@ Hyrax::Transactions::Container.merge(ApplicationContainerOverrides)
 
 #### Exercise 3: Transactions
 
+Assume we want to mint an identifier using a custom scheme every time an object is created.
+
+Hint: do this without changing the controller! `Hyrax::WorksControllerBehavior#create` is calling `Hyrax::Transactions::Container['change_set.create_work']`.
+
 ```sh
 # Make these tests pass:
 git checkout transactions-exercise
