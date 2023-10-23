@@ -337,3 +337,5 @@ custom_queries.each do |handler|
 end
 
 ActiveFedora.init(solr_config_path: Rails.root.join('config', 'solr.yml'))
+
+Hyrax.publisher.subscribe(LoggingListener.new)
