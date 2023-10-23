@@ -35,7 +35,7 @@ To ensure you can run the application, do:
 
 ```sh
 git clone git@github.com:samvera-labs/transitioning-to-valkyrie-workshop.git
-docker pull ghcr.io/samvera/transitioning-to-valkyrie-workshop:2023-10-23
+docker compose pull
 docker compose up
 docker compose exec app rspec # expect 159 examples, 0 failures, 2 pending
 ```
@@ -49,7 +49,7 @@ The goal of this workshop is to familiarize you with how Hyrax 5.0 supports mana
 The patterns we're looking at often replace older patterns from the Sufia/Hyrax 1.x era, including:
 
   - `HydraEditor::Form`;
-  - `#to_solr` and `ActiveFedora::IndexingService`;
+  - `ActiveFedora::Base#to_solr` and `ActiveFedora::IndexingService`;
   - the (little known) `Hyrax::Callbacks`;
   - the "Actor Stack".
 
@@ -102,6 +102,49 @@ form.class < Valkyrie::ChangeSet # => true
 ```
 
 When using the model generator (`rails generate hyrax:work_resource Monograph`), a `Hyrax::Form` is generated for each model into `app/forms`. You can customize the form used by `WorksControllerBehavior` and related code by editing this class.
+
+Notably, Reform properties can accept arbitrary named parameters as metadata. Hyrax's views use some of this metadata to drive display behavior:
+
+```ruby
+class MonographForm < Hyrax::Forms::ResourceForm(Monograph)
+  property :title, required: true, primary: true
+end
+
+MonographForm.required_fields # => [:title, :creator, :record_info]
+
+work = Monograph.new
+form = Hyrax::Forms::ResourceForm.for(work)
+
+form.primary_terms # => [:title, :creator, :rights_statement, :record_info, :place_of_publication, :genre]
+```
+
+We can do validation:
+
+```ruby
+class MonographForm < Hyrax::Forms::ResourceForm(Monograph)
+  property :title, required: true, primary: true
+  validates :title, presence: true
+end
+
+work = Monograph.new
+form = Hyrax::Forms::ResourceForm.for(work)
+
+form.valid? # => false
+form.errors.to_s # => "{:title=>[\"can't be blank\"], :creator=>[\"can't be blank\"], :record_info=>[\"can't be blank\"]}"
+```
+
+And we can do data transformation with Populators and Prepopulators:
+
+```ruby
+class MonographForm < Hyrax::Forms::ResourceForm(Monograph)
+  property :title, required: true, primary: true, populator: :upcase_populator
+  validates :title, presence: true
+
+  def upcase_populator(fragment:, **)
+    self.title = Arary(fragment.upcase)
+  end
+end
+```
 
 #### Indexers
 
